@@ -25,6 +25,8 @@ const rootRoute = require("./routes/root.r");
 const userRoute = require("./routes/user.r");
 const messageRoute = require("./routes/message.r");
 
+const { updateOnline, updateOffline, findOnline } = require("./utils/helpers");
+
 app.use(
   cors({
     origin: true,
@@ -40,11 +42,39 @@ app.use("/user", userRoute);
 
 // socket io
 io.on("connection", async (socket) => {
+  // instance
   const socket_instance = new SocketConnection(io, socket);
 
+  // join and send message
   socket.on("join-room", async (roomID) => socket_instance.joinRoom(roomID));
-
   socket.on("send-message", async (payload) =>
     socket_instance.sendMessage(payload)
   );
+  socket.on("typing-message", async (payload) =>
+    socket_instance.typingMessage(payload)
+  );
+
+  // user activity sockets
+  socket.on("active-user", async (payload) => {
+    const { _id } = payload;
+
+    await updateOnline(_id, socket.id);
+    const active_users = await findOnline();
+
+    io.emit("get-active-users", active_users);
+  });
+
+  socket.on("offline", async () => {
+    await updateOffline(socket.id);
+
+    const active_users = await findOnline();
+    io.emit("get-active-users", active_users);
+  });
+
+  socket.on("disconnect", async () => {
+    await updateOffline(socket.id);
+
+    const active_users = await findOnline();
+    io.emit("get-active-users", active_users);
+  });
 });

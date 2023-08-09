@@ -1,14 +1,22 @@
 import React from "react";
-import { Avatar, Group, Text, UnstyledButton } from "@mantine/core";
+import { Avatar, Group, Indicator, Text, UnstyledButton } from "@mantine/core";
 import { useHover } from "@mantine/hooks";
 import { ChannelContext } from "../../contexts/ChannelContext";
+import { socket } from "../../utils/socket";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const ContactNameButton = ({ payload, userID }) => {
-  const { channelID, setChannelID } = React.useContext(ChannelContext);
+  const navigate = useNavigate();
+  const { channelID: cid } = useParams();
+
+  const { activeUsers } = React.useContext(ChannelContext);
 
   const { _id, email } = payload;
 
-  const handleChangeID = () => setChannelID(`${userID}-${_id}`);
+  const handleChangeID = () => {
+    socket.emit("join-room", `${userID}-${_id}`);
+    navigate(`/${userID}-${_id}`);
+  };
 
   const initials = email.slice(0, 2);
   const name = email.split("@")[0];
@@ -20,7 +28,7 @@ export const ContactNameButton = ({ payload, userID }) => {
       bg={
         hovered
           ? "#F1F3F5"
-          : channelID === `${userID}-${_id}`
+          : cid === `${userID}-${_id}`
           ? "dark"
           : "transparent"
       }
@@ -30,18 +38,18 @@ export const ContactNameButton = ({ payload, userID }) => {
       onClick={handleChangeID}
     >
       <Group>
-        <Avatar size={40} color="dark">
-          <Text tt="uppercase" span>
-            {initials}
-          </Text>
-        </Avatar>
+        <Indicator color={activeUsers.includes(_id) ? "green" : "gray"}>
+          <Avatar size={40} color="dark">
+            <Text tt="uppercase" span>
+              {initials}
+            </Text>
+          </Avatar>
+        </Indicator>
         <div>
           <Text
             size="sm"
             tt="uppercase"
-            color={
-              channelID === `${userID}-${_id}` && !hovered ? "white" : "dark"
-            }
+            color={cid === `${userID}-${_id}` && !hovered ? "white" : "dark"}
           >
             {name}
           </Text>

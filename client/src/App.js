@@ -11,13 +11,18 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      const userInfo = await getUserInfo();
+      try {
+        const userInfo = await getUserInfo();
 
-      if (userInfo) {
-        socket.connect();
-        setUser(userInfo);
-      } else {
-        setUser(null);
+        if (userInfo) {
+          socket.connect();
+
+          setUser(userInfo);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.log(error);
       }
     })();
 

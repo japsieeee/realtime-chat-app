@@ -10,6 +10,13 @@ const userSchema = new Schema(
       type: String,
       require: true,
     },
+    active: {
+      type: String,
+      default: "offline",
+    },
+    socketID: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

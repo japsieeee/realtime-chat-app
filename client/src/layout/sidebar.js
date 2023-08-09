@@ -4,8 +4,14 @@ import { getUserInfo } from "../utils/getUserInfo";
 import { getUsers } from "../utils/getUsers";
 import { Logout } from "../components/buttons/logout";
 import { ContactNameButton } from "../components/buttons/unstyled";
+import { socket } from "../utils/socket";
+import { ChannelContext } from "../contexts/ChannelContext";
+import { AuthContext } from "../contexts/AuthContext";
 
 export const Sidebar = () => {
+  const { user } = React.useContext(AuthContext);
+  const { setActiveUsers } = React.useContext(ChannelContext);
+
   const [myID, setMyID] = React.useState("");
   const [allUsers, setAllUsers] = React.useState([]);
 
@@ -16,7 +22,12 @@ export const Sidebar = () => {
 
       const data = await getUserInfo();
       setMyID(data._id);
+
+      socket.emit("active-user", user);
+
+      socket.on("get-active-users", (payload) => setActiveUsers(payload));
     })();
+    // eslint-disable-next-line
   }, []);
 
   return (
@@ -36,12 +47,19 @@ export const Sidebar = () => {
           </Text>
         </Paper>
 
-        {allUsers.length >= 1 &&
-          allUsers
-            .filter((user) => user._id !== myID)
-            .map((user, i) => (
-              <ContactNameButton key={i} payload={user} userID={myID} />
-            ))}
+        <Flex
+          direction="column"
+          w="100%"
+          mah="80vh"
+          style={{ overflowY: "auto" }}
+        >
+          {allUsers.length >= 1 &&
+            allUsers
+              .filter((user) => user._id !== myID)
+              .map((user, i) => (
+                <ContactNameButton key={i} payload={user} userID={myID} />
+              ))}
+        </Flex>
       </Flex>
 
       <Flex align="start" direction="column" w="100%" p="sm">

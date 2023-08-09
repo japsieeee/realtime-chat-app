@@ -1,6 +1,7 @@
 import React from "react";
 import { IoExitOutline } from "react-icons/io5";
 import { Button } from "@mantine/core";
+import { socket } from "../../utils/socket";
 
 export const Logout = () => {
   const handleLogout = async () => {
@@ -9,6 +10,7 @@ export const Logout = () => {
       credentials: "include",
     });
 
+    socket.emit("offline");
     window.location.reload(false);
   };
 
@@ -17,5 +19,4 @@ export const Logout = () => {
       Log out
     </Button>
   );
-  // return <button onClick={handleLogout}>Logout</button>;
 };

@@ -3,7 +3,7 @@ export const getUserInfo = async () => {
     credentials: "include",
   });
 
-  const { data, error, message } = await response.json();
+  const { data, error } = await response.json();
 
   let user = null;
 
