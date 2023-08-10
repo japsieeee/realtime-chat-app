@@ -27,7 +27,7 @@ SOCKET_IO_ORIGIN=http://localhost:3001
 
 By default, your `SOCKET_IO_ORIGIN` runs on `http://localhost:3001` because that's where your client application run. Just leave it in `http://localhost:3001`
 
-5. Type `npm run install` command in the root directory of your project. It will install all dependencies from the `package.json`
+5. Type `npm install` command in the root directory of your project. It will install all dependencies from the `package.json`
 
 6. Now from your root directory again, type `npm run install-packages` command and it will install all packages both for client and server.
 
