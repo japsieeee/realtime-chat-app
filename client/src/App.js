@@ -5,8 +5,10 @@ import { Home } from "./pages/Home";
 import { socket } from "./utils/socket";
 import { getUserInfo } from "./utils/getUserInfo";
 import { Landing } from "./pages/Landing";
+import { useParams } from "react-router-dom";
 
 function App() {
+  const { channelID: cid } = useParams();
   const { user, setUser } = useContext(AuthContext);
 
   useEffect(() => {
@@ -16,6 +18,8 @@ function App() {
 
         if (userInfo) {
           socket.connect();
+
+          if (cid) socket.emit("join-room", cid);
 
           setUser(userInfo);
         } else {

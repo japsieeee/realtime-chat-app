@@ -7,13 +7,16 @@ import { getUserMessages } from "../utils/getUserMessages";
 import { getMessageTime } from "../utils/getMessageTime";
 import { useParams } from "react-router-dom";
 import { reverseChannelID } from "../utils/helpers";
+import { notifications } from "@mantine/notifications";
+import { ChannelContext } from "../contexts/ChannelContext";
 
 export const Home = () => {
   const { channelID: cid } = useParams();
 
   const { user } = useContext(AuthContext);
+  const { setNotifs } = useContext(ChannelContext);
 
-  const endRef = useRef();
+  const contentRef = useRef();
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -41,17 +44,13 @@ export const Home = () => {
 
   useEffect(() => {
     setMessages([]);
+    setMessage("");
 
     if (cid) {
       // fetch the old messages
       getUserMessages(cid)
         .then((d) => {
           if (d) {
-            endRef?.current?.scrollIntoView({
-              behavior: "smooth",
-              block: "end",
-            });
-
             setMessages(d);
           } else {
             setMessages([]);
@@ -65,6 +64,35 @@ export const Home = () => {
   }, [cid]);
 
   useEffect(() => {
+    socket.on("receive-notification", (payload) => {
+      const {
+        from: { email },
+        channelID,
+        message,
+        to,
+      } = payload;
+
+      const reverseID = reverseChannelID(channelID);
+
+      if (cid === channelID || cid === reverseID) {
+      } else {
+        if (user._id === to) {
+          setNotifs((prev) => [...prev, payload]);
+
+          notifications.show({
+            title: (
+              <Text color="dark" span>
+                {`New message from: ${email}`}
+              </Text>
+            ),
+            message:
+              message.length >= 20 ? `${message.slice(0, 20)}...` : message,
+            color: "blue",
+          });
+        }
+      }
+    });
+
     if (cid) {
       socket.on("receive-message", (payload) => {
         const payloadWithTime = {
@@ -80,19 +108,49 @@ export const Home = () => {
           payloadWithTime.channelID === reverseID
         ) {
           setMessages((prev) => [...prev, payloadWithTime]);
-
-          endRef?.current?.scrollIntoView({
-            behavior: "smooth",
-            block: "end",
-          });
         }
       });
     }
 
-    return () => socket.off("receive-message");
-  }, [cid]);
+    socket.on("receive-is-typing", (payload) => {
+      const { channelID, from, typing: isTyping } = payload;
+      const reverseID = reverseChannelID(channelID);
 
-  // typing message
+      if (cid === channelID || cid === reverseID) {
+        if (from !== user._id) {
+          if (isTyping) {
+            setTyping(true);
+          } else {
+            setTyping(false);
+          }
+        }
+      }
+    });
+
+    return () => {
+      socket.off("receive-is-typing");
+      socket.off("receive-message");
+      socket.off("receive-notification");
+    };
+    // eslint-disable-next-line
+  }, [cid, user._id]);
+
+  useEffect(() => {
+    const payload = {
+      channelID: cid,
+      from: user._id,
+    };
+
+    if (message.length >= 1) {
+      socket.emit("is-typing", { ...payload, typing: true });
+    } else {
+      socket.emit("is-typing", { ...payload, typing: false });
+    }
+  }, [message, cid, user._id]);
+
+  useEffect(() => {
+    contentRef.current.scrollTop = contentRef.current.scrollHeight;
+  }, [messages]);
 
   return (
     <Flex mih="100vh">
@@ -114,6 +172,7 @@ export const Home = () => {
               bg="dark"
               mb="sm"
               px="sm"
+              ref={contentRef}
               style={{
                 overflowY: "auto",
               }}
@@ -140,17 +199,14 @@ export const Home = () => {
                         bg={from === user._id ? "#FFFFFF" : "#A6A7AB"}
                         radius="sm"
                         p="xs"
-                        maw={400}
                         ta="start"
                       >
                         <Text size="xs" tt="uppercase" weight={600}>
                           {getMessageTime(createdAt)}
                         </Text>
-                        <pre style={{ margin: 0 }}>
-                          <Text color="dark" lh="20px">
-                            {msg}
-                          </Text>
-                        </pre>
+                        <Box maw="500px" style={{ whiteSpace: "pre-wrap" }}>
+                          {msg}
+                        </Box>
                       </Paper>
                     </Flex>
                   ))
@@ -159,8 +215,8 @@ export const Home = () => {
                     Say hi! Make a conversation
                   </Text>
                 )}
-                <Box ref={endRef} mb="sm" />
               </Flex>
+              <Box mt="xs" />
             </Flex>
 
             {cid && (

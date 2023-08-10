@@ -1,6 +1,13 @@
 const SocketModel = require("../models/Socket");
 const MessageModel = require("../models/Message");
-const { reverseChannelID } = require("../utils/helpers");
+const UserModel = require("../models/User");
+
+const {
+  reverseChannelID,
+  updateOnline,
+  updateOffline,
+  findOnline,
+} = require("../utils/helpers");
 
 class SocketConnection {
   constructor(io, socket) {
@@ -11,20 +18,21 @@ class SocketConnection {
 
   async joinRoom(channelID) {
     const reverseID = reverseChannelID(channelID);
+
     const currentRoom = await SocketModel.findById(channelID);
     const existingRoom = await SocketModel.findById(reverseID);
 
     if (existingRoom) {
-      this.socket.join(reverseID);
       this.room = reverseID;
+      this.socket.join(reverseID);
     } else {
       try {
         if (!currentRoom) {
           await SocketModel.create({ _id: channelID });
         }
 
-        this.socket.join(channelID);
         this.room = channelID;
+        this.socket.join(channelID);
       } catch (error) {
         console.log(error);
       }
@@ -41,6 +49,15 @@ class SocketConnection {
     };
 
     this.io.to(this.room).emit("receive-message", payload);
+
+    const user = await UserModel.findById(from);
+
+    const filteredData = {
+      _id: user._id,
+      email: user.email,
+    };
+
+    this.io.emit("receive-notification", { ...payload, from: filteredData });
 
     try {
       await MessageModel.create(payload);
@@ -63,6 +80,28 @@ class SocketConnection {
     if (existingRoom) {
       this.io.to(reverseID).emit("receive-typing-message", payload);
     }
+  }
+
+  async updateOnline(payload) {
+    const { _id } = payload;
+
+    await updateOnline(_id, this.socket.id);
+    const active_users = await findOnline();
+
+    this.io.emit("get-active-users", active_users);
+  }
+
+  async updateOffline() {
+    await updateOffline(this.socket.id);
+
+    const active_users = await findOnline();
+    this.io.emit("get-active-users", active_users);
+  }
+
+  async isTyping(payload) {
+    const overridePayload = { ...payload, channelID: this.room };
+
+    this.io.to(this.room).emit("receive-is-typing", overridePayload);
   }
 }
 

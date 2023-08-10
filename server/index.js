@@ -55,26 +55,10 @@ io.on("connection", async (socket) => {
   );
 
   // user activity sockets
-  socket.on("active-user", async (payload) => {
-    const { _id } = payload;
-
-    await updateOnline(_id, socket.id);
-    const active_users = await findOnline();
-
-    io.emit("get-active-users", active_users);
-  });
-
-  socket.on("offline", async () => {
-    await updateOffline(socket.id);
-
-    const active_users = await findOnline();
-    io.emit("get-active-users", active_users);
-  });
-
-  socket.on("disconnect", async () => {
-    await updateOffline(socket.id);
-
-    const active_users = await findOnline();
-    io.emit("get-active-users", active_users);
-  });
+  socket.on("active-user", async (payload) =>
+    socket_instance.updateOnline(payload)
+  );
+  socket.on("offline", async () => socket_instance.updateOffline());
+  socket.on("disconnect", async () => socket_instance.updateOffline());
+  socket.on("is-typing", async (payload) => socket_instance.isTyping(payload));
 });

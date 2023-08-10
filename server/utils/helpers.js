@@ -25,6 +25,6 @@ module.exports.findOnline = async () => {
   return onlineUsers.length <= 0 ? [] : onlineUsers.map((user) => user._id);
 };
 
-module.exports.reverseChannelID = async (channelID) => {
+module.exports.reverseChannelID = (channelID) => {
   return `${channelID.split("-")[1]}-${channelID.split("-")[0]}`;
 };
