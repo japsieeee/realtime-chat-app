@@ -25,8 +25,6 @@ const rootRoute = require("./routes/root.r");
 const userRoute = require("./routes/user.r");
 const messageRoute = require("./routes/message.r");
 
-const { updateOnline, updateOffline, findOnline } = require("./utils/helpers");
-
 app.use(
   cors({
     origin: true,
@@ -50,13 +48,13 @@ io.on("connection", async (socket) => {
   socket.on("send-message", async (payload) =>
     socket_instance.sendMessage(payload)
   );
-  socket.on("typing-message", async (payload) =>
-    socket_instance.typingMessage(payload)
-  );
 
   // user activity sockets
   socket.on("active-user", async (payload) =>
     socket_instance.updateOnline(payload)
+  );
+  socket.on("typing-message", async (payload) =>
+    socket_instance.typingMessage(payload)
   );
   socket.on("offline", async () => socket_instance.updateOffline());
   socket.on("disconnect", async () => socket_instance.updateOffline());
