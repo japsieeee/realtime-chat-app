@@ -2,6 +2,8 @@
 
 > Procedure to run the application
 
+**Before you start: Make sure you already have Node.js installed in your local machine - You can [follow this guide](https://www.youtube.com/watch?v=3F5IaPqj7ds) if you haven't installed it yet.**
+
 1. Clone the project in your choice directory. You can check this [youtube link](https://www.youtube.com/watch?v=q9wc7hUrW8U) for guide
 2. In the root directory of your cloned project, navigate to `/server` directory and create an `.env` file
 
@@ -27,8 +29,10 @@ SOCKET_IO_ORIGIN=http://localhost:3001
 
 By default, your `SOCKET_IO_ORIGIN` runs on `http://localhost:3001` because that's where your client application run. Just leave it in `http://localhost:3001`
 
-5. Now from your root directory type `npm run install-packages` command and it will install all packages both for client and server.
+5. Type `npm install` command in the root directory of your project. It will install all dependencies from the `package.json`
 
-6. After installing all the dependencies you can now run both server at the same time using `npm run dev` command.
+6. Now from your root directory again, type `npm run install-packages` command and it will install all packages both for client and server.
 
-7. Open `http:localhost:3001`
+7. After installing all the dependencies you can now run both server at the same time using `npm run dev` command.
+
+8. Open `http:localhost:3001`
