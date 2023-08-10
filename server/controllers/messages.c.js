@@ -1,17 +1,17 @@
 const Message = require("../models/Message");
 
+const { reverseChannelID } = require("../utils/helpers");
+
 module.exports.getMessage = async (req, res) => {};
 
 module.exports.browseMessage = async (req, res) => {
   const { channelID } = req.params;
 
-  const reverseChannelID = `${channelID.split("-")[1]}-${
-    channelID.split("-")[0]
-  }`;
+  const reverseID = reverseChannelID(channelID);
 
   // checks both ids
   const find = await Message.find({ channelID });
-  const find2 = await Message.find({ channelID: reverseChannelID });
+  const find2 = await Message.find({ channelID: reverseID });
 
   if (find.length >= 1) {
     return res.status(200).json({
