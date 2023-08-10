@@ -35,4 +35,4 @@ By default, your `SOCKET_IO_ORIGIN` runs on `http://localhost:3001` because that
 
 7. After installing all the dependencies you can now run both server at the same time using `npm run dev` command.
 
-8. Open `http:localhost:3001`
+8. Open `http://localhost:3001`
