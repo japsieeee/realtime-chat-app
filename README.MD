@@ -2,6 +2,8 @@
 
 > Procedure to run the application
 
+**Before you start: Make sure you already have Node.js installed in your local machine - You can [follow this guide](https://www.youtube.com/watch?v=3F5IaPqj7ds) if you haven't installed it yet.**
+
 1. Clone the project in your choice directory. You can check this [youtube link](https://www.youtube.com/watch?v=q9wc7hUrW8U) for guide
 2. In the root directory of your cloned project, navigate to `/server` directory and create an `.env` file
 
